@@ -26,7 +26,7 @@ public class Router<T> extends Group<T> {
 
     public RouteHandler<T> handler(HttpMethod method, String route) {
         var result = this.tree.find(method, route);
-        if (result == null) {
+        if (result == null || (result.node() == null && result.handler() == null)) {
             return handle_404;
         }
         if(result.node() != null && result.handler() == null) {

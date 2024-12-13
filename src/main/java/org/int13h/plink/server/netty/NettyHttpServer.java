@@ -1,4 +1,4 @@
-package org.int13h.plink.server;
+package org.int13h.plink.server.netty;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -9,10 +9,17 @@ import io.netty.handler.codec.http.*;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import org.int13h.plink.router.Router;
+import org.int13h.plink.server.HttpResponse;
+import org.int13h.plink.server.HttpRouter;
+import org.int13h.plink.server.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.function.BiConsumer;
 
 public class NettyHttpServer {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NettyHttpServer.class);
 
     private final EventLoopGroup boss;
     private final EventLoopGroup worker;
@@ -55,9 +62,9 @@ public class NettyHttpServer {
 
     private static class CustomHttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-        private final Router<BiConsumer<HttpRequest, HttpResponse>> router;
+        private final Router<BiConsumer<org.int13h.plink.server.HttpRequest, org.int13h.plink.server.HttpResponse>> router;
 
-        public CustomHttpServerHandler(Router<BiConsumer<HttpRequest, HttpResponse>> router) {
+        public CustomHttpServerHandler(Router<BiConsumer<org.int13h.plink.server.HttpRequest, HttpResponse>> router) {
             this.router = router;
         }
 
@@ -72,9 +79,21 @@ public class NettyHttpServer {
             var handler = router.handler(req.method(), req.path());
             req.setHandler(handler);
 
-            handler.handler().accept(req, new HttpResponse() {
-            });
+            var res = new NettyHttpResponse(ctx, msg.headers());
+
+            handler.handler().accept(req, res);
+            res.finish();
+            ctx.writeAndFlush(res);
         }
 
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+            LOGGER.error(cause.getMessage(), cause);
+            var res = new NettyHttpResponse(ctx, new DefaultHttpHeaders());
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR);
+            res.html("<h1>500: Internal Server Error</h1>");
+            res.finish();
+            ctx.writeAndFlush(res);
+        }
     }
 }

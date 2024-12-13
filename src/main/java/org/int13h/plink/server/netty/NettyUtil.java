@@ -1,9 +1,8 @@
-package org.int13h.plink.server;
+package org.int13h.plink.server.netty;
 
 import org.int13h.plink.router.HttpMethod;
 import org.int13h.plink.router.RouteHandler;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -21,17 +20,18 @@ public class NettyUtil {
         };
     }
 
-    public static Map<String, String> paramMap(String uri, RouteHandler<?> handler) {
+    public static Map<String, String> paramMap(String path, RouteHandler<?> handler) {
         if(handler.params() == null || handler.params().isEmpty()) {
             return Map.of();
         }
-        String[] parts = uri.split("/");
+        String[] parts = path.split("/");
         return handler.params()
                 .entrySet()
                 .stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        entry -> parts[entry.getValue()]
+                        entry -> parts[entry.getValue() + 1]
         ));
     }
+
 }

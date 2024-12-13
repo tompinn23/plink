@@ -1,10 +1,10 @@
-package org.int13h.plink.server;
+package org.int13h.plink.server.netty;
 
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import org.int13h.plink.router.HttpMethod;
-import org.int13h.plink.router.Route;
 import org.int13h.plink.router.RouteHandler;
+import org.int13h.plink.server.HttpRequest;
 
 import java.util.Map;
 
