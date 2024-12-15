@@ -1,4 +1,4 @@
-package org.int13h.plink.codegen.inject;
+package org.int13h.plink.inject.codegen;
 
 
 import io.avaje.prism.GenerateAPContext;
@@ -14,10 +14,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import static org.int13h.plink.codegen.inject.APContext.logNote;
-import static org.int13h.plink.codegen.inject.APContext.typeElement;
+import static org.int13h.plink.inject.codegen.APContext.typeElement;
 
 @GenerateUtils
 @GenerateAPContext
@@ -58,18 +56,22 @@ public class InjectProcessor extends AbstractProcessor {
         var beans = maybeElements(round, SingletonPrism.PRISM_TYPE).map(this::readBeans).orElse(Set.of());
         beans.forEach(b -> {
             try {
-                if(!b.shouldDelay()) {
-                    new BeanWriter(b).write();
-                } else {
+                var writer = singletons.getBeanWriter(b);
+                if(b.shouldDelay() || writer.shouldDelay()) {
                     delayedBeans.add(b);
+                } else {
+                    writer.write();
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
 
-        var graph = new BeanGraph(singletons);
-        logNote("%s", graph.getBeanOrder().stream().map(BeanReader::name).collect(Collectors.toList()));
+        try {
+            singletons.write(round.processingOver());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return true;
     }
 

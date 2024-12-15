@@ -1,4 +1,4 @@
-package org.int13h.plink.codegen.inject;
+package org.int13h.plink.inject.codegen;
 
 public class Utils {
 

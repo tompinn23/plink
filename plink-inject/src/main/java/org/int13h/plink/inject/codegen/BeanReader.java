@@ -1,13 +1,13 @@
-package org.int13h.plink.codegen.inject;
+package org.int13h.plink.inject.codegen;
 
 import com.palantir.javapoet.TypeName;
 
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class BeanReader {
@@ -16,6 +16,8 @@ public class BeanReader {
 
     private ExecutableElement constructor;
     private ArrayList<TypeElement> provides = new ArrayList<>();
+
+    private boolean optional = false;
 
     public BeanReader(TypeElement beanType) {
         this.beanType = beanType;
@@ -26,12 +28,28 @@ public class BeanReader {
         return constructor.getParameters().stream().map(param -> APContext.asTypeElement(param.asType()).getQualifiedName().toString()).collect(Collectors.toList());
     }
 
-    public List<String> provides() {
+    public List<String> provideNames() {
         if(provides.isEmpty()) {
             provides.add(beanType);
             classImplements(beanType, provides);
         }
         return provides.stream().map(e -> e.getQualifiedName().toString()).toList();
+    }
+
+    public List<TypeElement> provides() {
+        if(provides.isEmpty()) {
+            provides.add(beanType);
+            classImplements(beanType, provides);
+        }
+        return provides;
+    }
+
+    public boolean isOptional() {
+        return RequiresPropertyPrism.isPresent(this.beanType);
+    }
+
+    Optional<RequiresPropertyPrism> getRequiresProperty() {
+        return RequiresPropertyPrism.getOptionalOn(this.beanType);
     }
 
     public Element element() {
@@ -42,7 +60,11 @@ public class BeanReader {
         return constructor().getParameters().stream().map(Element::asType).anyMatch(e -> e.getKind() == TypeKind.ERROR);
     }
 
-    public String name() {
+    public Optional<String> name() {
+        return Optional.empty();
+    }
+
+    public String type() {
         return beanType.getQualifiedName().toString();
     }
 

@@ -1,11 +1,14 @@
 package org.int13h.plink;
 
+import org.int13h.plink.inject.Beans;
 import org.int13h.plink.server.HttpRouter;
 import org.int13h.plink.server.netty.NettyHttpServer;
 
 public class Main {
 
     public static void main(String[] args) throws Exception {
+
+        var beans = Beans.load(Thread.currentThread().getContextClassLoader());
 
         HttpRouter router = new HttpRouter((req, res) -> {
             res.write("<h1>404 Not Found</h1>");

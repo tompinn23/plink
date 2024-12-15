@@ -15,7 +15,8 @@ java {
 }
 
 dependencies {
-    annotationProcessor(project(":plink-codegen"))
+    implementation(project(":plink-inject"))
+    annotationProcessor(project(":plink-inject"))
     implementation("io.netty:netty-all:4.1.115.Final")
     implementation("jakarta.inject:jakarta.inject-api:2.0.1")
 

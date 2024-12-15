@@ -15,6 +15,7 @@ dependencies {
     compileOnly("jakarta.inject:jakarta.inject-api:2.0.1")
 
     implementation("com.palantir.javapoet:javapoet:0.6.0")
+    implementation("org.apache.commons:commons-lang3:3.17.0")
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")

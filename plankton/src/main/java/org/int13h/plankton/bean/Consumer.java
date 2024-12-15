@@ -1,7 +1,6 @@
-package org.int13h.plink.bean;
+package org.int13h.plankton.bean;
 
 import jakarta.inject.Singleton;
-import org.int13h.plink.inject.RequiresProperty;
 
 @Singleton
 public class Consumer implements BeanInterface {

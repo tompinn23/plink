@@ -1,7 +1,6 @@
-package org.int13h.plink.codegen.inject;
+package org.int13h.plink.inject.codegen;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class BeanGraph {
 

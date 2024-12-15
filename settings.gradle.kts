@@ -1,2 +1,3 @@
 rootProject.name = "plink"
-include("plink-codegen")
+include("plink-inject")
+include("plankton")
