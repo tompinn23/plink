@@ -1,5 +1,7 @@
 package org.int13h.plink.inject;
 
+import org.int13h.plink.inject.spi.ConfigService;
+
 public class SystemPropertyConfig implements ConfigService {
 
     @Override

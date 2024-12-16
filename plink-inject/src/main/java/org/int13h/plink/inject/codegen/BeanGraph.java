@@ -5,9 +5,9 @@ import java.util.*;
 public class BeanGraph {
 
     private final List<BeanReader> sorted;
-    private final BeanScope scope;
+    private final BeanScopeWriter scope;
 
-    public BeanGraph(BeanScope scope) {
+    public BeanGraph(BeanScopeWriter scope) {
         this.scope = scope;
         this.sorted = orderBeans();
     }

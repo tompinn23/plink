@@ -1,4 +1,6 @@
-package org.int13h.plink.inject;
+package org.int13h.plink.inject.spi;
+
+import org.int13h.plink.inject.Builder;
 
 public interface BeanContainer extends InjectService {
 

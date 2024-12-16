@@ -68,6 +68,7 @@ public class BeanReader {
         return beanType.getQualifiedName().toString();
     }
 
+
     public String simpleName() {
         return beanType.getSimpleName().toString();
     }

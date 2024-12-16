@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
 
-public class BeanScope {
+public class BeanScopeWriter {
 
     private final Map<String, BeanReader> beanNames;
     private final List<BeanReader> beans;
@@ -20,7 +20,7 @@ public class BeanScope {
 
     private final Map<BeanReader, BeanWriter> beanWriters = new HashMap<>();
 
-    public BeanScope() {
+    public BeanScopeWriter() {
         this.scopeName = "Singletons";
         this.beanNames = new HashMap<>();
         this.beans = new ArrayList<>();
@@ -105,20 +105,6 @@ public class BeanScope {
                 .addAnnotation(anno.build()).build();
     }
 
-    public MethodSpec writeMeta(TypeName builder) {
-        var beanMeta = TypeName.get(APContext.typeElement("org.int13h.plink.inject.BeanMeta").asType());
-        return MethodSpec.methodBuilder("getMeta")
-                .addModifiers(Modifier.PRIVATE)
-                .returns(beanMeta)
-                .addParameter(String.class, "name")
-                .beginControlFlow("try")
-                .addStatement("$T method = getClass().getMethod(name, $T.class)", TypeName.get(Method.class), builder)
-                .addStatement("return method.getAnnotation($T.class)", beanMeta)
-                .nextControlFlow("catch ($T ignored)", NoSuchMethodException.class)
-                .addStatement("return null")
-                .endControlFlow()
-                .build();
-    }
 
     public boolean write(boolean processingOver) throws IOException {
         if(this.written) return true;
@@ -133,7 +119,7 @@ public class BeanScope {
             writer.write();
         }
 
-        TypeName container = TypeName.get(APContext.typeElement("org.int13h.plink.inject.BeanContainer").asType());
+        TypeName container = TypeName.get(APContext.typeElement("org.int13h.plink.inject.spi.BeanContainer").asType());
         TypeName builderType = TypeName.get(APContext.typeElement("org.int13h.plink.inject.Builder").asType());
 
         var beanMethods = new ArrayList<MethodSpec>();
@@ -169,7 +155,6 @@ public class BeanScope {
                 .addMethod(writeProvides())
                 .addMethod(buildMethod)
                 .addMethods(beanMethods)
-                .addMethod(writeMeta(builderType))
                 .build();
 
         JavaFile file = JavaFile.builder(top, clazz).build();
@@ -178,6 +163,7 @@ public class BeanScope {
         var writer = source.openWriter();
         file.writeTo(writer);
         writer.close();
+        InjectProcessor.writeService(top + "." + clazz.name());
         this.written = true;
         return true;
     }

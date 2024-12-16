@@ -10,12 +10,14 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
+import javax.tools.FileObject;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.int13h.plink.inject.codegen.APContext.typeElement;
+import static javax.tools.StandardLocation.CLASS_OUTPUT;
 
 @GenerateUtils
 @GenerateAPContext
@@ -25,9 +27,20 @@ import static org.int13h.plink.inject.codegen.APContext.typeElement;
 })
 public class InjectProcessor extends AbstractProcessor {
 
-    private final BeanScope singletons = new BeanScope();
+    private final BeanScopeWriter singletons = new BeanScopeWriter();
 
     private final Set<BeanReader> delayedBeans = new HashSet<>();
+
+    private static FileObject servicesFile;
+    private static Writer servicesWriter;
+
+    public static void writeService(String entry) {
+        try {
+            servicesWriter.write(entry + "\n");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public SourceVersion getSupportedSourceVersion() {
@@ -38,11 +51,22 @@ public class InjectProcessor extends AbstractProcessor {
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         APContext.init(processingEnv);
+        try {
+            servicesFile = processingEnv.getFiler().createResource(CLASS_OUTPUT, "", "META-INF/services/org.int13h.plink.inject.spi.InjectService");
+            servicesWriter = servicesFile.openWriter();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment round) {
         if(round.processingOver()) {
+            try {
+                servicesWriter.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             APContext.clear();
             return false;
         }
@@ -106,6 +130,6 @@ public class InjectProcessor extends AbstractProcessor {
 
     // Optional because these annotations are not guaranteed to exist
     private static Optional<? extends Set<? extends Element>> maybeElements(RoundEnvironment round, String name) {
-        return Optional.ofNullable(typeElement(name)).map(round::getElementsAnnotatedWith);
+        return Optional.ofNullable(APContext.typeElement(name)).map(round::getElementsAnnotatedWith);
     }
 }

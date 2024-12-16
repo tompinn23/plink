@@ -9,6 +9,7 @@ import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -52,11 +53,11 @@ public class BeanWriter {
         List<Object> absentiaParams = new ArrayList<>();
 
         var absentia = new StringBuilder();
-        absentia.append("if(builder.isBeanAbsent(");
+        absentia.append("if(builder.isBeanAbsent($S");
         if(reader.name().isPresent()) {
-            absentia.append("$S"); absentiaParams.add(reader.name().get());
+            absentiaParams.add(reader.name().get());
         } else {
-            absentia.append("null");
+            absentiaParams.add("~" + reader.simpleName().toLowerCase());
         }
         for(var string : reader.provides()) {
             absentia.append(", $T.class");
@@ -91,11 +92,11 @@ public class BeanWriter {
     public void writeRegister(MethodSpec.Builder builder) {
         var register = new StringBuilder();
         var params = new ArrayList<>();
-        register.append("builder.register(");
+        register.append("builder.register($S");
         if(reader.name().isPresent()) {
-            register.append("$S"); params.add(reader.name().get());
+             params.add(reader.name().get());
         } else {
-            register.append("null");
+            params.add("~" + reader.simpleName().toLowerCase());
         }
 
         register.append(", bean");
